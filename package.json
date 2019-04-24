@@ -1,0 +1,23 @@
+{
+  "name": "Youtube-video-generator",
+  "version": "1.0.0",
+  "description": "Experiment using Watson[IBM] + Adobe After Effects + Wikipedia + Google Images API + Algorithmia + JavaScript + Node.js to generate generic videos ;)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/willianbs/Youtube-video-generator.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/willianbs/Youtube-video-generator/issues"
+  },
+  "homepage": "https://github.com/willianbs/Youtube-video-generator#readme",
+  "dependencies": {
+    "readline-sync": "^1.4.9"
+  }
+}
