@@ -6,6 +6,8 @@ const algorithmiaApiKey = require("../credentials/algorithmia.json").apiKey;
 const watsonApiKey = require("../credentials/watson-nlu.json").apikey;
 const watsonURL = require("../credentials/watson-nlu.json").url;
 
+const state = require("./state");
+
 // using Watson to understand and extract keywords from the text
 const nlu = new NaturalLanguageUnderstandingV1({
   version: "2018-11-16",
@@ -14,12 +16,15 @@ const nlu = new NaturalLanguageUnderstandingV1({
 });
 //run robot
 async function robot(content) {
+  const content = state.load();
+
   await fetchContentFromSource(content); //wikipedia first
   sanitizeContent(content); //remove blank lines and markdown and dates in parenthesis
   breakContentIntoSentences(content); //transform full block of text into readable sentences
   limitMaximunSenteces(content); //limits the number of sentences to not overuse the API calls
   await fetchKeywordsOfAllSentences(content); //iterate & adds keywords to every sentence
 
+  state.save(content);
   async function fetchContentFromSource(content) {
     const algorithmiaAuthenticated = algorithmia(algorithmiaApiKey);
     const wikipediaAlgorithm = algorithmiaAuthenticated.algo(

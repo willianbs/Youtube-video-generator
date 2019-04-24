@@ -1,33 +1,17 @@
 //Orquestrator
 
-const readline = require("readline-sync");
-
 //Getting robots
 const robots = {
-  text: require("./robots/text")
+  input: require("./robots/input"),
+  text: require("./robots/text"),
+  state: require("./robots/state")
 };
-
+// Inits everything
 async function start() {
-  const content = {
-    maxSentences = 7
-  };
-  content.searchTerm = askAndReturnSearchTerm(); //what are we talking about?
-  content.prefix = askAndReturnPrefix(); // making human friendly ;)
-
-  await robots.text(content); //awaits for the robot to execute before going forward
-  function askAndReturnSearchTerm() {
-    return readline.question("Type a term to talk about: ");
-  }
-  function askAndReturnPrefix() {
-    const prefixes = ["Who is", "What is", "The history of"];
-    const selectedPrefixIndex = readline.keyInSelect(
-      prefixes,
-      "Choose an option: "
-    );
-    const selectedPrefixText = prefixes[selectedPrefixIndex];
-    return selectedPrefixText;
-  }
-  console.log(content);
+  robots.input();
+  await robots.text(); //awaits for the robot to execute before going forward
+  const content = robots.state.load();
+  console.dir(content, { depth: null });
 }
 
 start();
