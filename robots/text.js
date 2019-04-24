@@ -1,11 +1,24 @@
 const algorithmia = require("algorithmia");
-const sentenceBoundaryDetection = require("sbd");
-const algorithmiaApiKey = require("../credentials/algorithmia.json").apiKey;
+const NaturalLanguageUnderstandingV1 = require("watson-developer-cloud/natural-language-understanding/v1.js");
+const sentenceBoundaryDetection = require("sbd"); //identify sentences from blocks of text
 
+const algorithmiaApiKey = require("../credentials/algorithmia.json").apiKey;
+const watsonApiKey = require("../credentials/watson-nlu.json").apikey;
+const watsonURL = require("../credentials/watson-nlu.json").url;
+
+// using Watson to understand and extract keywords from the text
+const nlu = new NaturalLanguageUnderstandingV1({
+  version: "2018-11-16",
+  iam_apikey: watsonApiKey,
+  url: watsonURL
+});
+//run robot
 async function robot(content) {
   await fetchContentFromSource(content); //wikipedia first
-  sanitizeContent(content);
-  breakContentIntoSentences(content);
+  sanitizeContent(content); //remove blank lines and markdown and dates in parenthesis
+  breakContentIntoSentences(content); //transform full block of text into readable sentences
+  limitMaximunSenteces(content); //limits the number of sentences to not overuse the API calls
+  await fetchKeywordsOfAllSentences(content); //iterate & adds keywords to every sentence
 
   async function fetchContentFromSource(content) {
     const algorithmiaAuthenticated = algorithmia(algorithmiaApiKey);
@@ -44,6 +57,7 @@ async function robot(content) {
   function removeDatesInParentheses(text) {
     return text.replace(/\((?:\([^()]*\)|[^()])*\)/gm, "").replace(/  /g, " ");
   }
+
   function breakContentIntoSentences(content) {
     content.sentences = [];
     const sentences = sentenceBoundaryDetection.sentences(
@@ -57,5 +71,35 @@ async function robot(content) {
       });
     });
   }
+  function limitMaximunSenteces(content) {
+    content.sentences = content.sentences.slice(0, content.maxSentences);
+  }
+  async function fetchKeywordsOfAllSentences(content) {
+    for (const sentence of content.sentences) {
+      sentence.keywords = await fetchWatsonAndReturnKeywords(sentence.text);
+    }
+  }
 }
+
+async function fetchWatsonAndReturnKeywords(sentence) {
+  return new Promise((resolve, reject) => {
+    nlu.analyse(
+      {
+        text: sentence,
+        features: {
+          keywords: {}
+        }
+      },
+      (error, response) => {
+        if (error) throw error;
+        //console.log(JSON.stringify(response, null, 4));
+        const keywords = response.keywords.map(keyword => {
+          return keyword.text;
+        });
+        resolve(keywords);
+      }
+    );
+  });
+}
+
 module.exports = robot;
