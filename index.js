@@ -1,11 +1,18 @@
-//Orquestrador
+//Orquestrator
 
 const readline = require("readline-sync");
 
-function start() {
+//Getting robots
+const robots = {
+  text: require("./robots/text")
+};
+
+async function start() {
   const content = {};
   content.searchTerm = askAndReturnSearchTerm(); //what are we talking about?
   content.prefix = askAndReturnPrefix(); // making human friendly ;)
+
+  await robots.text(content); //awaits for the robot to execute before going forward
   function askAndReturnSearchTerm() {
     return readline.question("Type a term to talk about: ");
   }
