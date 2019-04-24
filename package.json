@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/willianbs/Youtube-video-generator/issues"
   },
-  "homepage": "https://github.com/willianbs/Youtube-video-generator#readme"
+  "homepage": "https://github.com/willianbs/Youtube-video-generator#readme",
+  "dependencies": {
+    "readline-sync": "^1.4.9"
+  }
 }
