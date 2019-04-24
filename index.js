@@ -8,7 +8,9 @@ const robots = {
 };
 
 async function start() {
-  const content = {};
+  const content = {
+    maxSentences = 7
+  };
   content.searchTerm = askAndReturnSearchTerm(); //what are we talking about?
   content.prefix = askAndReturnPrefix(); // making human friendly ;)
 
