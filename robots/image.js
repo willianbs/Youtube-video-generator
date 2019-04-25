@@ -1,3 +1,4 @@
+const imageDownloader = require("image-downloader");
 const { google } = require("googleapis");
 const customsearch = google.customsearch("v1");
 const state = require("./state");
@@ -8,18 +9,16 @@ async function robot() {
   const content = state.load();
 
   await fetchImagesForAllSentences(content);
+  await downloadAllImages(content);
   state.save(content);
 
   async function fetchImagesForAllSentences(content) {
-    for (const sentence of context.sentences) {
+    for (const sentence of content.sentences) {
       const query = `${content.searchTerm} ${sentence.keywords[0]}`;
-      sentence.images = fetchGoogleAndReturnImagesLinks(query);
+      sentence.images = await fetchGoogleAndReturnImagesLinks(query);
       sentence.googleSearchQuery = query;
     }
   }
-
-  console.dir(imagesArray, { depth: null });
-  process.exit(0);
 
   async function fetchGoogleAndReturnImagesLinks(query) {
     const response = await customsearch.cse.list({
@@ -35,6 +34,43 @@ async function robot() {
       return item.link;
     });
     return imagesUrl;
+  }
+  async function downloadAllImages(content) {
+    content.downloadedImages = [];
+
+    for (
+      let sentenceIndex = 0;
+      sentenceIndex < content.sentences.length;
+      sentenceIndex++
+    ) {
+      const images = content.sentences[sentenceIndex].images;
+
+      for (let imageIndex = 0; imageIndex < images.length; imageIndex++) {
+        const imageUrl = images[imageIndex];
+
+        try {
+          if (content.downloadedImages.includes(imageUrl))
+            throw new Error("Imagem Já baixada");
+
+          await downloadAndSave(imageUrl, `${sentenceIndex}-original.png`);
+          content.downloadedImages.push(imageUrl);
+          console.log(
+            `> [${sentenceIndex}][${imageIndex}] Download concluído: ${imageUrl}`
+          );
+          break;
+        } catch (error) {
+          console.warn(
+            `> [${sentenceIndex}][${imageIndex}] Erro ao baixar: ${imageUrl}: ${error}`
+          );
+        }
+      }
+    }
+  }
+  async function downloadAndSave(url, filename) {
+    return imageDownloader.image({
+      url: url,
+      dest: `./cache/${filename}`
+    });
   }
 }
 module.exports = robot;
