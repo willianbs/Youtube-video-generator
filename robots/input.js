@@ -1,15 +1,14 @@
-
 const readline = require("readline-sync");
-const state = require('./state');
+const state = require("./state");
 
-function robot(){
+function robot() {
   const content = {
-    maxSentences = 7
+    maxSentences: 7
   };
   content.searchTerm = askAndReturnSearchTerm(); //what are we talking about?
   content.prefix = askAndReturnPrefix(); // making human friendly ;)
   state.save(content); //saves data to disc (can use SQL later, this is just a POC)
-  
+
   function askAndReturnSearchTerm() {
     return readline.question("Type a term to talk about: ");
   }
@@ -24,4 +23,4 @@ function robot(){
   }
 }
 
-module.exports = robot
+module.exports = robot;
