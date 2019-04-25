@@ -15,7 +15,7 @@ const nlu = new NaturalLanguageUnderstandingV1({
   url: watsonURL
 });
 //run robot
-async function robot(content) {
+async function robot() {
   const content = state.load();
 
   await fetchContentFromSource(content); //wikipedia first
@@ -88,7 +88,7 @@ async function robot(content) {
 
 async function fetchWatsonAndReturnKeywords(sentence) {
   return new Promise((resolve, reject) => {
-    nlu.analyse(
+    nlu.analyze(
       {
         text: sentence,
         features: {
