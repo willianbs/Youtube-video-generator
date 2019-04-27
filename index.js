@@ -13,7 +13,7 @@ async function start() {
   await robots.text(); //awaits for the robot to execute before going forward
   await robots.image(); //searches for imagens in context with the keywords returned from "robots.text()"
   const content = robots.state.load();
-  console.dir(content, { depth: null });
+  // console.dir(content, { depth: null });
 }
 
 start();
