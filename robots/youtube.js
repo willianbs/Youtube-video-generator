@@ -1,25 +1,31 @@
-const express = require("express");
+const state = require("./state");
 const google = require("googleapis").google;
 const youtube = google.youtube({ version: "v3" });
 const OAuth2 = google.auth.OAuth2;
-const state = require("./state.js");
+const express = require("express");
 const fs = require("fs");
+const path = require("path");
+const rootPath = path.resolve(__dirname, "..");
 
 async function robot() {
   const content = state.load();
-
-  await authenticateWithOAuth();
+  await authenticateWithOAuth2();
   const videoInformation = await uploadVideo(content);
   await uploadThumbnail(videoInformation);
 
-  async function authenticateWithOAuth() {
+  function printProgress(progress) {
+    process.stdout.clearLine();
+    process.stdout.cursorTo(0);
+    process.stdout.write(progress + "%");
+  }
+  async function authenticateWithOAuth2() {
     const webServer = await startWebServer();
-    const OAuthClient = await createOAuthClient();
+    const OAuthClient = await createOAuth2Client();
     requestUserConsent(OAuthClient);
     const authorizationToken = await waitForGoogleCallback(webServer);
-    await requestGoogleForAccessTokens(OAuthClient, authorizationToken);
+    await requestGoogleForAccessToken(OAuthClient, authorizationToken);
     await setGlobalGoogleAuthentication(OAuthClient);
-    await stopWebServer(webServer);
+    await stopWebserver(webServer);
 
     async function startWebServer() {
       return new Promise((resolve, reject) => {
@@ -27,8 +33,7 @@ async function robot() {
         const app = express();
 
         const server = app.listen(port, () => {
-          console.log(`> Listening on http://localhost:${port}`);
-
+          console.log(`> Listening on: http://localhost:${port}`);
           resolve({
             app,
             server
@@ -37,52 +42,45 @@ async function robot() {
       });
     }
 
-    async function createOAuthClient() {
+    async function createOAuth2Client() {
       const credentials = require("../credentials/google-youtube.json");
-
       const OAuthClient = new OAuth2(
         credentials.web.client_id,
         credentials.web.client_secret,
         credentials.web.redirect_uris[0]
       );
-
       return OAuthClient;
     }
 
     function requestUserConsent(OAuthClient) {
       const consentUrl = OAuthClient.generateAuthUrl({
         access_type: "offline",
-        scope: ["https://www.googleapis.com/auth/youtube"]
+        scope: "https://www.googleapis.com/auth/youtube"
       });
 
-      console.log(`> Please give your consent: ${consentUrl}`);
+      console.log(`>>>>> Please, give your consent: ${consentUrl}`);
     }
 
     async function waitForGoogleCallback(webServer) {
       return new Promise((resolve, reject) => {
-        console.log("> Waiting for user consent...");
-
+        console.log(`>>>>> Waiting for user consent...`);
         webServer.app.get("/oauth2callback", (req, res) => {
           const authCode = req.query.code;
-          console.log(`> Consent given: ${authCode}`);
-
-          res.send("<h1>Thank you!</h1><p>Now close this tab.</p>");
+          console.log(`> consent given: ${authCode}`);
+          res.send("<h1>Thank you</h1><p>Now you can close this tab ;)</p>");
           resolve(authCode);
         });
       });
     }
-
-    async function requestGoogleForAccessTokens(
+    async function requestGoogleForAccessToken(
       OAuthClient,
       authorizationToken
     ) {
       return new Promise((resolve, reject) => {
         OAuthClient.getToken(authorizationToken, (error, tokens) => {
-          if (error) {
-            return reject(error);
-          }
+          if (error) reject(error);
 
-          console.log("> Access tokens received:");
+          console.log(`> Access Tokens received:`);
           console.log(tokens);
 
           OAuthClient.setCredentials(tokens);
@@ -90,14 +88,12 @@ async function robot() {
         });
       });
     }
-
     function setGlobalGoogleAuthentication(OAuthClient) {
       google.options({
         auth: OAuthClient
       });
     }
-
-    async function stopWebServer(webServer) {
+    async function stopWebserver(webServer) {
       return new Promise((resolve, reject) => {
         webServer.server.close(() => {
           resolve();
@@ -105,9 +101,11 @@ async function robot() {
       });
     }
   }
-
   async function uploadVideo(content) {
-    const videoFilePath = "./content/output.mov";
+    const videoFilePath = `${rootPath}/content/${content.searchTerm.replace(
+      /\s/g,
+      ""
+    )}.mp4`; //remove white spaces of the name
     const videoFileSize = fs.statSync(videoFilePath).size;
     const videoTitle = `${content.prefix} ${content.searchTerm}`;
     const videoTags = [content.searchTerm, ...content.sentences[0].keywords];
@@ -133,36 +131,32 @@ async function robot() {
         body: fs.createReadStream(videoFilePath)
       }
     };
-
     const youtubeResponse = await youtube.videos.insert(requestParameters, {
       onUploadProgress: onUploadProgress
     });
+    //printProgress(o)
 
     console.log(
-      `> Video available at: https://youtu.be/${youtubeResponse.data.id}`
+      `Video available at: https://youtu.be/${youtubeResponse.data.id}`
     );
     return youtubeResponse.data;
-
     function onUploadProgress(event) {
       const progress = Math.round((event.bytesRead / videoFileSize) * 100);
-      console.log(`> ${progress}% completed`);
+      printProgress(`Uploading progress: ${progress}`);
     }
   }
-
   async function uploadThumbnail(videoInformation) {
     const videoId = videoInformation.id;
-    const videoThumbnailFilePath = "./content/youtube-thumbnail.jpg";
-
+    const videoThumbnailFilePath = "./cache/youtube-thumb.png";
     const requestParameters = {
       videoId: videoId,
       media: {
-        mimeType: "image/jpeg",
+        mimetype: "image/png",
         body: fs.createReadStream(videoThumbnailFilePath)
       }
     };
-
     const youtubeResponse = await youtube.thumbnails.set(requestParameters);
-    console.log(`> Thumbnail uploaded!`);
+    console.log(`> Thumbnail uploaded`);
   }
 }
 
