@@ -19,6 +19,7 @@
   "homepage": "https://github.com/willianbs/Youtube-video-generator#readme",
   "dependencies": {
     "algorithmia": "^0.3.10",
+    "express": "^4.16.4",
     "gm": "^1.23.1",
     "googleapis": "^39.2.0",
     "handbrake-js": "^3.0.8",
