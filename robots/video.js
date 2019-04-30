@@ -155,9 +155,9 @@ async function robot() {
         "-comp",
         "main",
         "-project",
-        destinationFilePathMOV,
+        templateFilePath,
         "-output",
-        destinationFilePath
+        destinationFilePathMOV
       ]);
       aerender.stdout.on("data", data => {
         // process.stdout.write(data);

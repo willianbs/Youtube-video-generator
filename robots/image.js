@@ -27,7 +27,7 @@ async function robot() {
       auth: googleSearchCredentials.apiKey,
       cx: googleSearchCredentials.searchEngineId,
       q: query,
-      rights: "cc_publicdomain", //Filters based on licensing. Supported values include: cc_publicdomain, cc_attribute, cc_sharealike, cc_noncommercial, cc_nonderived and combinations of these.
+      //rights: "cc_publicdomain", //Filters based on licensing. Supported values include: cc_publicdomain, cc_attribute, cc_sharealike, cc_noncommercial, cc_nonderived and combinations of these.
       searchType: "image",
       imgSize: "large", //size can be one of: icon, small, medium, large, xlarge, xxlarge, and huge
       num: 3 //Number of search results to return

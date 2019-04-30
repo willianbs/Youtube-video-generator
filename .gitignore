@@ -67,7 +67,7 @@ credentials/*.json
 content.json
 cache/*.png
 cache/*.jpg
-content/*.*
+content/*.js
 Adobe After Effects Auto-Save
 template.aep Logs/
 .DS_Store
