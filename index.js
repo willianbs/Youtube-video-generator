@@ -18,8 +18,6 @@ async function start() {
   await robots.image(); //searches for imagens in context with the keywords returned from "robots.text()"
   await robots.video(); //create video assets and renders it
   await robots.youtube(); //upload to YT
-  // const content = robots.state.load();
-  // console.dir(content, { depth: null });
 }
 
 start();
