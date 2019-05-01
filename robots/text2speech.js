@@ -21,23 +21,31 @@ async function robot() {
     }
   }
   async function createSpeechFromSentence(sentenceIndex, sentenceText) {
-    // algorithmia.client("simOmVbMYBteS6bKble+QQwwXBb1")
-    // .algo("magicanded/algospeak/0.2.0?timeout=300") // timeout is optional
-    // .pipe(input)
-    // .then(function(response) {
-    //     console.log(response.get());
-    // });
     const inputObject = {
       text: sentenceText,
       voice: "en-US"
     };
     const algorithmiaAuthenticated = algorithmia(algorithmiaApiKey);
     const speechAlgorithm = algorithmiaAuthenticated.algo(
-      "magicanded/algospeak/0.2.0"
+      "magicanded/algospeak/0.2.0?timeout=300"
     );
     const speechResponse = await speechAlgorithm.pipe(inputObject);
     const speechContent = speechResponse.get();
-    content.sourceContentOriginal = wikipediaContent.content;
+    var t = {
+      isError: false,
+      errorMessage: "Converting text to speech is completed successfully!",
+      errorCode: "Success",
+      results: {
+        outputUrl:
+          "https://soundoftext.nyc3.digitaloceanspaces.com/ed050870-6b70-11e9-8130-0582ccfcede9.mp3",
+        outputFile:
+          "data://.algo/magicanded/algospeak/temp/algospeak-output2935799914561371346.mp3",
+        outputFileUrl:
+          "https://algorithmia.com/v1/data/.algo%2Fmagicanded%2Falgospeak%2Ftemp%2Falgospeak-output2935799914561371346.mp3"
+      }
+    };
+    //content.sentences[sentenceIndex].speech = speechContent.outputUrl;
+    console.dir(speechContent, { depth: null });
   }
 }
 module.exports = robot;
