@@ -16,6 +16,7 @@ const nlu = new NaturalLanguageUnderstandingV1({
 });
 //run robot
 async function robot() {
+  console.log("[TEXT ANALYSIS] Starting...");
   const content = state.load();
 
   await fetchContentFromSource(content); //wikipedia first
@@ -26,6 +27,7 @@ async function robot() {
 
   state.save(content);
   async function fetchContentFromSource(content) {
+    console.log("[TEXT ANALYSIS] Fetching content from Source(wikipedia)...");
     const algorithmiaAuthenticated = algorithmia(algorithmiaApiKey);
     const wikipediaAlgorithm = algorithmiaAuthenticated.algo(
       "web/WikipediaParser/0.1.2"
@@ -33,6 +35,7 @@ async function robot() {
     const wikipediaResponse = await wikipediaAlgorithm.pipe(content.searchTerm);
     const wikipediaContent = wikipediaResponse.get();
     content.sourceContentOriginal = wikipediaContent.content;
+    console.log("[TEXT ANALYSIS] Fetching done.");
   }
   function sanitizeContent(content) {
     const withoutBlankLinesAndMarkdown = removeBlankLinesAndMarkdown(
@@ -87,6 +90,7 @@ async function robot() {
 }
 
 async function fetchWatsonAndReturnKeywords(sentence) {
+  console.log("[TEXT ANALYSIS] Fetching Keywords from Watson...");
   return new Promise((resolve, reject) => {
     nlu.analyze(
       {
@@ -104,6 +108,7 @@ async function fetchWatsonAndReturnKeywords(sentence) {
         const keywords = response.keywords.map(keyword => {
           return keyword.text;
         });
+        console.log("[TEXT ANALYSIS] Keyword fetching done.");
         resolve(keywords);
       }
     );
