@@ -7,6 +7,7 @@ const path = require("path");
 const rootPath = path.resolve(__dirname, "..");
 
 async function robot() {
+  console.log(`[VIDEO ANALYSIS] Starting...`);
   const content = state.load();
   await convertAllImages(content);
   await createAllSentenceImages(content);
@@ -53,7 +54,7 @@ async function robot() {
         .write(outputFile, error => {
           if (error) return reject(error);
           console.log(
-            `> [${sentenceIndex}] Image converted: ${inputFile} -> ${outputFile}`
+            `[VIDEO ANALYSIS] [${sentenceIndex}] Image converted: ${inputFile} -> ${outputFile}`
           );
           resolve();
         });
@@ -113,7 +114,9 @@ async function robot() {
         .out(`caption:${sentenceText}`)
         .write(outputFile, error => {
           if (error) return reject(error);
-          console.log(`> [${sentenceIndex}] Sentence created: ${outputFile}`);
+          console.log(
+            `[VIDEO ANALYSIS] [${sentenceIndex}] Sentence created: ${outputFile}`
+          );
           resolve();
         });
     });
@@ -124,7 +127,9 @@ async function robot() {
         .in(`./cache/0-converted.png`)
         .write(`./cache/youtube-thumb.png`, error => {
           if (error) return reject(error);
-          console.log(`> Created Thumb. `);
+          console.log(
+            `[VIDEO ANALYSIS] Youtube Thumbnail created successfuly.`
+          );
           resolve();
         });
     });
@@ -150,7 +155,7 @@ async function robot() {
         /\s/g,
         ""
       )}.mp4`;
-      console.log(" > Starting After Effects...");
+      console.log("[VIDEO ANALYSIS] Starting After Effects...");
       const aerender = spawn(AERenderFilePath, [
         "-comp",
         "main",
@@ -160,13 +165,13 @@ async function robot() {
         destinationFilePathMOV
       ]);
       aerender.stdout.on("data", data => {
-        // process.stdout.write(data);
-        printProgress(data);
+        process.stdout.write(data);
+        //printProgress(data);
       });
       aerender.stdout.on("close", data => {
         // process.stdout.write(data);
-        printProgress(data);
-        console.log(" > After Effects closed, convert to .mp4");
+        // printProgress(data);
+        console.log("[VIDEO ANALYSYS] After Effects closed, convert to .mp4");
         hbjs
           .spawn({
             input: destinationFilePathMOV,
@@ -174,23 +179,25 @@ async function robot() {
           })
           .on("error", err => {
             // invalid user input, no video found etc
-            console.error(`Deu merda na conversão: ${err}`);
+            console.error(`[VIDEO ANALYSIS] Conversion error: ${err}`);
           })
           .on("progress", progress => {
             printProgress(
-              `> Percent complete: ${progress.percentComplete}, ETA: ${
-                progress.eta
-              }`
+              `[VIDEO CONVERTING] Percent complete: ${
+                progress.percentComplete
+              }, ETA: ${progress.eta}`
             );
           })
           .on("complete", progress => {
-            console.log(" > Encoding finished successfully");
+            console.log("[VIDEO CONVERTING] Encoding finished successfully");
             //remove big MOV file
             fs.unlinkSync(destinationFilePathMOV, err => {
               if (err) {
-                console.error(`Deu merda na exclusão: ${err}`);
+                console.error(
+                  `[VIDEO CONVERTING] Error unlinking Original File: ${err}`
+                );
               }
-              console.log(`> File MOV removed.`);
+              console.log(`[VIDEO CONVERTING] File MOV removed.`);
             });
             resolve();
           });

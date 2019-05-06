@@ -6,6 +6,7 @@ const state = require("./state");
 const googleSearchCredentials = require("../credentials/google-search.json");
 
 async function robot() {
+  console.log("[IMAGE ANALYSIS] Starting...");
   const content = state.load();
 
   await fetchImagesForAllSentences(content);
@@ -14,10 +15,22 @@ async function robot() {
   state.save(content);
 
   async function fetchImagesForAllSentences(content) {
-    for (const sentence of content.sentences) {
-      const query = `${content.searchTerm} ${sentence.keywords[0]}`;
-      sentence.images = await fetchGoogleAndReturnImagesLinks(query);
-      sentence.googleSearchQuery = query;
+    for (
+      let sentenceIndex = 0;
+      sentenceIndex < content.sentences.length;
+      sentenceIndex++
+    ) {
+      let query;
+      if (sentenceIndex === 0) query = `${content.searchTerm}`;
+      else
+        query = `${content.searchTerm} ${
+          content.sentences[sentenceIndex].keywords[0]
+        }`;
+      console.log(`[IMAGE ANALYSIS] Querying Google Images with: "${query}"`);
+      content.sentences[
+        sentenceIndex
+      ].images = await fetchGoogleAndReturnImagesLinks(query);
+      content.sentences[sentenceIndex].images = query;
     }
   }
 
@@ -52,17 +65,17 @@ async function robot() {
 
         try {
           if (content.downloadedImages.includes(imageUrl))
-            throw new Error("Imagem Já baixada");
+            throw new Error("[IMAGE ANALYSIS] Image already downloaded");
 
           await downloadAndSave(imageUrl, `${sentenceIndex}-original.png`);
           content.downloadedImages.push(imageUrl);
           console.log(
-            `> [${sentenceIndex}][${imageIndex}] Download concluído: ${imageUrl}`
+            `[IMAGE ANALYSIS] [${sentenceIndex}][${imageIndex}] Download finished: ${imageUrl}`
           );
           break;
         } catch (error) {
           console.warn(
-            `> [${sentenceIndex}][${imageIndex}] Erro ao baixar: ${imageUrl}: ${error}`
+            `[IMAGE ANALYSIS] [${sentenceIndex}][${imageIndex}] Error downloading: ${imageUrl}: ${error}`
           );
         }
       }
