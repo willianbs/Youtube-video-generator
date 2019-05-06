@@ -96,7 +96,10 @@ async function fetchWatsonAndReturnKeywords(sentence) {
         }
       },
       (error, response) => {
-        if (error) throw error;
+        if (error) {
+          reject(error);
+          return
+        }
         //console.log(JSON.stringify(response, null, 4));
         const keywords = response.keywords.map(keyword => {
           return keyword.text;
